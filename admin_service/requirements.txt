@@ -1,0 +1,11 @@
+Flask==3.0.3
+Flask-PyMongo==2.3.0
+Flask-Cors==4.0.0
+flask-jwt-extended==4.6.0
+python-dotenv==1.0.0
+Werkzeug==3.0.3
+pandas==2.2.2
+numpy==1.26.4
+joblib
+scikit-learn
+numpy
