@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Creator Dashboard | CrowdFunding</title>
+  <style>
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f5f9ff; color: #333; }
+    header {
+      background: linear-gradient(to right, #003366, #007bff);
+      color: white; padding: 15px 30px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .nav-buttons button {
+      background: white; color: #007bff; border: none;
+      padding: 10px 20px; border-radius: 8px;
+      font-weight: 600; margin-left: 10px; cursor: pointer;
+    }
+    .nav-buttons button.active { background: #0056b3; color: white; }
+    .container { max-width: 1200px; margin: 30px auto; padding: 20px; }
+    .campaign-card { background: white; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+    .progress-bar { background: #eee; border-radius: 8px; height: 10px; }
+    .progress { background: #28a745; height: 10px; border-radius: 8px; }
+    form { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+    input, textarea, select { width: 100%; margin-bottom: 15px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
+    button.submit-btn { background: #007bff; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    button.submit-btn:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+  <header>
+    <h2>🎯 Campaign Service</h2>
+    <div class="nav-buttons">
+      <button id="showCampaignsBtn" class="active">My Campaigns</button>
+      <button id="createCampaignBtn">Create Campaign</button>
+    </div>
+  </header>
+
+  <div class="container" id="campaignSection">
+    <h3>Active Campaigns</h3>
+    <div id="campaignList">Loading...</div>
+  </div>
+
+  <div class="container" id="createSection" style="display:none;">
+    <h3>Create a New Campaign</h3>
+    <form id="campaignForm" enctype="multipart/form-data">
+      <input type="text" name="title" placeholder="Campaign Title" required>
+      <textarea name="description" placeholder="Description" required></textarea>
+      <input type="number" name="goalAmount" placeholder="Funding Goal (₹)" required>
+      <select name="category" required>
+        <option value="">Select Category</option>
+        <option>Tech & Innovation</option>
+        <option>Education</option>
+        <option>Health</option>
+      </select>
+      <input type="text" name="location" placeholder="Location" required>
+      <input type="date" name="endDate" required>
+      <input type="file" name="image" accept="image/*">
+      <button type="submit" class="submit-btn">Create Campaign</button>
+    </form>
+  </div>
+
+  <script>
+  const showBtn = document.getElementById("showCampaignsBtn");
+  const createBtn = document.getElementById("createCampaignBtn");
+  const campaignSection = document.getElementById("campaignSection");
+  const createSection = document.getElementById("createSection");
+  const campaignList = document.getElementById("campaignList");
+  const form = document.getElementById("campaignForm");
+
+  // Toggle sections
+  showBtn.onclick = () => {
+    createSection.style.display = "none";
+    campaignSection.style.display = "block";
+    showBtn.classList.add("active");
+    createBtn.classList.remove("active");
+    loadCampaigns();
+  };
+
+  createBtn.onclick = () => {
+    campaignSection.style.display = "none";
+    createSection.style.display = "block";
+    createBtn.classList.add("active");
+    showBtn.classList.remove("active");
+  };
+
+  // ✅ Fetch campaigns
+  async function loadCampaigns() {
+    try {
+      const res = await fetch("/api/campaigns");
+      const campaigns = await res.json();
+      campaignList.innerHTML = "";
+
+      if (!campaigns.length) {
+        campaignList.innerHTML = "<p>No campaigns found.</p>";
+        return;
+      }
+
+      campaigns.forEach(c => {
+        const progress = c.funding_goal > 0
+          ? Math.min((c.funded_amount / c.funding_goal) * 100, 100).toFixed(1)
+          : 0;
+
+        const div = document.createElement("div");
+        div.className = "campaign-card";
+        div.innerHTML = `
+          <h3>${c.title}</h3>
+          <p>${c.description}</p>
+          <p><strong>Goal:</strong> ₹${c.funding_goal}</p>
+          <p><strong>Raised:</strong> ₹${c.funded_amount}</p>
+          <div class="progress-bar"><div class="progress" style="width:${progress}%"></div></div>
+        `;
+        campaignList.appendChild(div);
+      });
+    } catch (err) {
+      console.error("Error loading campaigns:", err);
+      campaignList.innerHTML = "<p>Error loading campaigns.</p>";
+    }
+  }
+
+  // ✅ Create campaign
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    try {
+      const res = await fetch("/api/campaign", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ " + data.message);
+        form.reset();
+        showBtn.click(); // Switch back to My Campaigns tab
+      } else {
+        alert("❌ " + (data.message || "Failed to create campaign."));
+      }
+    } catch (err) {
+      console.error("Error creating campaign:", err);
+      alert("❌ Server Error. Try again.");
+    }
+  });
+
+  // Load campaigns initially
+  loadCampaigns();
+</script>
+
+</html>

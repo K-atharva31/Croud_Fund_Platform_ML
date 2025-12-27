@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crowdfunding Platform | Home</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(to bottom right, #f5f9ff, #e3f2fd);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: #003366;
+    }
+
+    header {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      background: linear-gradient(to right, #003366, #007bff);
+      color: white;
+      padding: 18px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: 0.5px;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 800px;
+      margin-top: 120px;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .container h2 {
+      font-size: 2.2rem;
+      color: #003366;
+      margin-bottom: 10px;
+    }
+
+    .container p {
+      font-size: 1.1rem;
+      color: #444;
+      margin-bottom: 40px;
+    }
+
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      width: 260px;
+      padding: 30px 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .card h3 {
+      color: #003366;
+      margin-top: 15px;
+      font-size: 1.3rem;
+    }
+
+    .card p {
+      font-size: 0.95rem;
+      color: #555;
+      margin: 10px 0 20px;
+    }
+
+    .card button {
+      background: linear-gradient(to right, #007bff, #0056b3);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .card button:hover {
+      background: linear-gradient(to right, #0056b3, #003f7f);
+    }
+
+    footer {
+      margin-top: 60px;
+      font-size: 0.9rem;
+      color: #777;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .cards {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🌍 CrowdFunding Platform</h1>
+    <span>Empowering Projects. Empowering People.</span>
+  </header>
+
+  <div class="container">
+    <h2>Welcome to the Crowdfunding Portal</h2>
+    <p>Choose your role to begin — whether you’re a creator launching a campaign or an investor helping ideas grow.</p>
+
+    <div class="cards">
+      <div class="card" onclick="goToCreator()">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Creator" width="80" height="80" loading="lazy"/>
+        <h3>Creator Dashboard</h3>
+        <p>Start and manage your campaigns, track progress, and engage with investors.</p>
+        <button>Go to Creator Portal</button>
+      </div>
+
+      <div class="card" onclick="goToInvestor()">
+        <img src="https://cdn-icons-png.flaticon.com/512/2329/2329072.png" alt="Investor" width="80" height="80" loading="lazy"/>
+        <h3>Investor Dashboard</h3>
+        <p>Explore live campaigns and invest securely through Razorpay integration.</p>
+        <button>Go to Investor Portal</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>© 2025 CrowdFunding Platform — Designed for Innovation & Transparency</p>
+  </footer>
+
+  <script>
+    function goToCreator() {
+      // Always fetch static page from /static
+      window.location.href = "/creator_dashboard.html";
+    }
+
+    function goToInvestor() {
+      // Redirect to investor portal (static)
+      window.location.href = "/invest.html";
+    }
+  </script>
+</body>
+</html>

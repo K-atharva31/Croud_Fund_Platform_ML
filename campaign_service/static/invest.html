@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Investor Dashboard | CrowdFunding Platform</title>
+  <style>
+    * { box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom right, #f5f9ff, #e3f2fd);
+      color: #333;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(to right, #003366, #007bff);
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    header h1 { margin: 0; font-size: 1.6rem; }
+
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      color: #003366;
+      margin-bottom: 25px;
+      border-left: 5px solid #007bff;
+      padding-left: 10px;
+    }
+
+    .campaign-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+    }
+
+    .campaign-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease;
+    }
+
+    .campaign-card:hover { transform: translateY(-5px); }
+
+    .campaign-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+
+    .campaign-card h3 {
+      color: #003366;
+      margin: 10px 0;
+    }
+
+    .campaign-card p {
+      color: #555;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
+    .progress-bar {
+      background: #e0e0e0;
+      border-radius: 8px;
+      height: 10px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .progress {
+      background: linear-gradient(to right, #28a745, #6ddf75);
+      height: 10px;
+      border-radius: 8px;
+      transition: width 0.3s ease;
+    }
+
+    button.invest-btn {
+      background: #28a745;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      margin-top: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button.invest-btn:hover {
+      background: #1f8c39;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #777;
+      font-size: 0.9rem;
+    }
+
+    .message {
+      text-align: center;
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+    }
+
+    .success {
+      background: #e6f4ea;
+      color: #2e7d32;
+      border: 1px solid #bde5c8;
+    }
+
+    .error {
+      background: #fdecea;
+      color: #b71c1c;
+      border: 1px solid #f8c8c8;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>💼 Investor Dashboard</h1>
+    <button onclick="window.location.href='/'" style="background:white;color:#003366;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;font-weight:600;">
+      ⬅ Home
+    </button>
+  </header>
+
+  <div class="container">
+    <h2 class="section-title">Explore Active Campaigns</h2>
+    <div id="campaignList" class="campaign-list">
+      <p>Loading campaigns...</p>
+    </div>
+  </div>
+
+  <footer>© 2025 CrowdFunding Platform | Secure Investments through Razorpay</footer>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+    const campaignList = document.getElementById('campaignList');
+
+    async function loadCampaigns() {
+      try {
+        const res = await fetch('/api/campaigns');
+        const campaigns = await res.json();
+        campaignList.innerHTML = '';
+
+        if (!campaigns.length) {
+          campaignList.innerHTML = '<p>No active campaigns available right now.</p>';
+          return;
+        }
+
+        campaigns.forEach(c => {
+          const percent = c.funding_goal > 0
+            ? Math.min((c.funded_amount / c.funding_goal) * 100, 100).toFixed(1)
+            : 0;
+
+          const div = document.createElement('div');
+          div.className = 'campaign-card';
+          div.innerHTML = `
+            <img src="${c.image_url || '/default-placeholder.png'}" alt="${c.title}">
+            <h3>${c.title}</h3>
+            <p>${c.description}</p>
+            <p><strong>Goal:</strong> ₹${Number(c.funding_goal).toLocaleString()}</p>
+            <p><strong>Raised:</strong> ₹${Number(c.funded_amount).toLocaleString()}</p>
+            <div class="progress-bar"><div class="progress" style="width:${percent}%"></div></div>
+            <button class="invest-btn" onclick="openInvestment('${c._id}', '${c.title}')">💰 Invest Now</button>
+          `;
+          campaignList.appendChild(div);
+        });
+      } catch (err) {
+        console.error('Error loading campaigns:', err);
+        campaignList.innerHTML = '<p class="error">Error loading campaigns.</p>';
+      }
+    }
+
+    async function openInvestment(campaignId, title) {
+      const amount = prompt(`Enter amount (in ₹) to invest in "${title}":`);
+      if (!amount || isNaN(amount) || amount <= 0) return alert('Enter a valid amount.');
+
+      try {
+        const res = await fetch('/investor/create-razorpay-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: amount })
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Payment init failed.');
+
+        const options = {
+          key: data.razorpay_key,
+          amount: data.amount,
+          currency: data.currency,
+          name: "Crowdfunding Investment",
+          description: `Investment in ${title}`,
+          order_id: data.order_id,
+          handler: async function (response) {
+            const investRes = await fetch('/investor/invest', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                campaign_id: campaignId,
+                investment_amount: amount,
+                payment_id: response.razorpay_payment_id,
+                order_id: data.order_id,
+                signature: response.razorpay_signature
+              })
+            }); 
+
+            const investData = await investRes.json();
+            if (investRes.ok) {
+              alert('✅ Investment successful!');
+              loadCampaigns();
+            } else {
+              alert('❌ Investment failed: ' + investData.message);
+            }
+          },
+          theme: { color: "#28a745" }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+      } catch (err) {
+        console.error('Payment Error:', err);
+        alert('❌ Payment failed. Try again.');
+      }
+    }
+
+    loadCampaigns();
+  </script>
+</body>
+</html>

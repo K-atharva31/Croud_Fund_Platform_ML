@@ -1,0 +1,4 @@
+flask
+flask-pymongo
+flask-cors
+razorpay==1.4.2
