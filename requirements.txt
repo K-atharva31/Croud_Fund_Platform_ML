@@ -1,0 +1,6 @@
+Flask==2.2.5
+Flask-PyMongo==2.3.0
+Flask-Cors==3.0.10
+Werkzeug==2.2.3
+python-dotenv==1.0.0
+pymongo==5.3.3

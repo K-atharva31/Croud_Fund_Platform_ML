@@ -1,0 +1,79 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  user_service:
+    build:
+      context: ./user_service
+    container_name: user_service
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/crowdfundingDB
+    depends_on:
+      - mongodb
+
+  campaign_service:
+    build: ./campaign_service
+    container_name: campaign-service
+    environment:
+      MONGO_URI: "mongodb://mongo:27017/campaign_db"
+      RAZORPAY_KEY_ID: "rzp_test_1zpkYyQYNTu8lc"
+      RAZORPAY_KEY_SECRET: "RBfrtwTF08EFIWO7nwIDQdFl"
+      RAZORPAY_WEBHOOK_SECRET: "your_webhook_secret"
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongodb
+
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - user_service
+
+  admin_service:
+    build:
+      context: ./admin_service
+    container_name: admin_service
+    ports:
+      - "5005:5005"
+    environment:
+      MONGO_URI: "mongodb://mongodb:27017/crowdfunding"
+      SECRET_KEY: "supersecretkey"
+      MAIN_ADMIN_EMAIL: "devlunagariya@gmail.com"
+      PORT: "5005"
+      FLASK_ENV: "production"
+    depends_on:
+      - mongodb
+    volumes:
+      - ./admin_service:/app
+
+
+  nginx_gateway:
+    image: nginx:latest
+    container_name: nginx_gateway
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - admin_service
+      - campaign_service
+      - user_service
+
+
+
+
+volumes:
+  mongo-data:
